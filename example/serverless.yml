@@ -1,0 +1,83 @@
+service: test
+
+frameworkVersion: ">=1.0.0 <2.0.0"
+
+# plugins
+plugins:
+  - serverless-webpack
+  - serverless-offline
+
+custom:
+  stages:
+    - local
+  # default stage/environment
+  defaultStage: local
+  # default AWS region
+  defaultRegion: us-east-1
+  # webpack config
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules:
+      forceExclude:
+        - aws-sdk
+  # serverless-offline
+  serverless-offline:
+    # offline server port
+    port: 4000
+
+# package
+package:
+  individually: true
+
+# aws provider
+provider:
+  name: aws
+  # common runtime for all functions
+  runtime: nodejs12.x
+  # cloudformation stack name
+  stackName: ${self:provider.stage}-test-stack
+  # API gateway Name
+  apiName: ${self:provider.stage}-test
+  # API keys
+  apiKeys:
+    - ${self:provider.stage}-test
+  # Deployment bucket name
+  # This bucket will created using terraform
+  # see {AWS_ACCOUNT}/common/deployable-package-store/{REGION}
+  deploymentBucket:
+    name: test-bucket
+  # The S3 prefix under which deployed artifacts should be stored.
+  deploymentPrefix: ${self:provider.stage}/serverless
+  # stage/environment (development|testing|staging|production) default is development
+  stage: ${opt:stage, self:custom.defaultStage}
+  # aws region
+  region: ${opt:region, self:custom.defaultRegion}
+  # aws profiles
+  profile: default
+  # AWS lambda configuration
+  # common memory size for all functions
+  memorySize: 128
+  # common timeout for all functions
+  timeout: 30
+  # lambda role
+  # This will be created using cloudformation
+  # see resources section
+  role: lambdaRole
+  # Environment variables to AWS lambda (global)
+  environment:
+    ENVIRONMENT: ${self:provider.stage}
+    REGION: ${self:provider.region}
+  # AWS cloudwatch configuration
+  logRetentionInDays: 14
+
+# serverless functions depending on stage
+functions:
+    soap-server:
+      handler: functions/server.handler
+      name: ${self:provider.stage}-test
+      description: Test
+      tags:
+        Name: ${self:provider.stage}-test
+      events:
+        - http: ANY /
+        - http: ANY /{proxy+}
