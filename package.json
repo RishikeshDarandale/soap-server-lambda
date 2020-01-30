@@ -1,0 +1,36 @@
+{
+  "name": "soap-server-lambda",
+  "version": "1.0.0",
+  "description": "This is AWS lambda integration for a simple SOAP server.",
+  "main": "src/SoapServer.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RishikeshDarandale/soap-server-lambda.git"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "soap",
+    "server"
+  ],
+  "author": "Rishikesh Darandale",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RishikeshDarandale/soap-server-lambda/issues"
+  },
+  "homepage": "https://github.com/RishikeshDarandale/soap-server-lambda#readme",
+  "devDependencies": {
+    "copy-webpack-plugin": "^5.1.1",
+    "serverless": "^1.62.0",
+    "serverless-offline": "^5.12.1",
+    "serverless-webpack": "^5.3.1",
+    "webpack": "^4.41.5",
+    "webpack-node-externals": "^1.7.2"
+  }
+}

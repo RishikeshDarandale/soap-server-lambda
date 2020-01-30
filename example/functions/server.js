@@ -1,12 +1,14 @@
 const SoapServer = require('../../src/SoapServer');
 
+const MyService = require('../src/MyService');
+
 const server = new SoapServer();
 
 server.addService(
-  'testService',
+  'MyService',
   {
-    wsdlPath: './testService.wsdl',
-    impl: 'Mock'
+    wsdlPath: 'wsdls/MyService.wsdl',
+    impl: new MyService(),
   }
 );
 exports.handler = server.createHandler();

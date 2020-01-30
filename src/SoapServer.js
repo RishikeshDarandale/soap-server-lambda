@@ -1,5 +1,8 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+
 class SoapServer {
 
   /**
@@ -17,13 +20,19 @@ class SoapServer {
    *                 wsdlPath as string
    *                 impl as an object of class implementing the service 
    */
-  addService(name, service) {
-    if (!name || !service) {
-      throw Error('Either name or service is missing.');
+  addService(name, serviceConfig) {
+    if (!name || !serviceConfig) {
+      throw Error('Either name or serviceConfig is missing.');
     }
-    this.services.set(name, service);
+    try {
+      console.log(serviceConfig.wsdlPath)
+      serviceConfig.wsdl = fs.readFileSync(path.resolve(serviceConfig.wsdlPath));
+    } catch(exception) {
+      throw Error('Cannot read the wsdl file: ' + serviceConfig.wsdlPath);
+    }
+    this.services.set(name, serviceConfig);
   }
- 
+
   /**
    * Create the lambda handler
    * 
@@ -36,7 +45,14 @@ class SoapServer {
       if (this.services.has(event.pathParameters.proxy)) {
         // get calls
         if (event.httpMethod === 'GET' && event.queryStringParameters.wsdl) {
-          // return the wsdl  
+          // return the wsdl
+          return {
+            body: this.services.get(event.pathParameters.proxy).wsdl  ,
+            statusCode: 200,
+            headers: {
+              'Content-Type': 'application/xml',
+            },
+          }
         } else if (event.httpMethod === 'POST') {
           // all post calls to service methods
 

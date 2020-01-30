@@ -1,0 +1,42 @@
+<definitions name = "MyService"
+   targetNamespace = "http://localhost:5000/wsdl/MyService.wsdl"
+   xmlns = "http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap = "http://schemas.xmlsoap.org/wsdl/soap/"
+   xmlns:tns = "http://localhost:5000/wsdl/MyService.wsdl"
+   xmlns:xsd = "http://www.w3.org/2001/XMLSchema">
+​
+  <message name = "MyFunctionRequest">
+    <part name = "testParam" type = "xsd:string"/>
+  </message>
+  <message name = "MyFunctionResponse">
+    <part name = "status" type = "xsd:string"/>
+  </message>
+  <portType name = "MyPort">
+    <operation name = "MyFunction">
+      <input message = "tns:MyFunctionRequest"/>
+      <output message = "tns:MyFunctionResponse"/>
+    </operation>
+  </portType>
+​
+  <binding name = "MyFunction_Binding" type = "tns:MyPort">
+    <soap:binding style = "rpc"
+         transport = "http://schemas.xmlsoap.org/soap/http"/>
+    <operation name = "MyFunction">
+      <soap:operation soapAction = "MyFunction"/>
+      <input>
+        <soap:body encodingStyle = "http://schemas.xmlsoap.org/soap/encoding/" namespace = "urn:localhost:MyService" use = "encoded"/>
+      </input>
+      <output>
+        <soap:body encodingStyle = "http://schemas.xmlsoap.org/soap/encoding/" namespace = "urn:localhost:MyService" use = "encoded"/>
+      </output>
+    </operation>
+  </binding>
+​
+  <service name = "MyService">
+    <documentation>WSDL File for MyService</documentation>
+    <port binding = "tns:MyFunction_Binding" name = "MyPort">
+      <soap:address location = "http://localhost:5000/wsdl/MyService" />
+    </port>
+  </service>
+​
+</definitions>
