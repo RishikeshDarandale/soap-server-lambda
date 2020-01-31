@@ -26,7 +26,7 @@ class SoapServer {
     }
     try {
       console.log(serviceConfig.wsdlPath)
-      serviceConfig.wsdl = fs.readFileSync(path.resolve(serviceConfig.wsdlPath));
+      serviceConfig.wsdl = fs.readFileSync(path.resolve(serviceConfig.wsdlPath), 'utf-8').toString();
     } catch(exception) {
       throw Error('Cannot read the wsdl file: ' + serviceConfig.wsdlPath);
     }
@@ -36,7 +36,7 @@ class SoapServer {
   /**
    * Create the lambda handler
    * 
-   * @return {function} a lambda handler to handle the incoing event
+   * @return {function} a lambda handler to handle the incoming event
    */
   createHandler() {
     return async (event, context) => {
@@ -44,10 +44,10 @@ class SoapServer {
       // check this service exists
       if (this.services.has(event.pathParameters.proxy)) {
         // get calls
-        if (event.httpMethod === 'GET' && event.queryStringParameters.wsdl) {
+        if (event.httpMethod === 'GET' && event.queryStringParameters.hasOwnProperty('wsdl')) {
           // return the wsdl
           return {
-            body: this.services.get(event.pathParameters.proxy).wsdl  ,
+            body: this.services.get(event.pathParameters.proxy).wsdl,
             statusCode: 200,
             headers: {
               'Content-Type': 'application/xml',
