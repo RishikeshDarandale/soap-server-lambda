@@ -2,13 +2,16 @@ const SoapServer = require('../../src/SoapServer');
 
 const MyService = require('../src/MyService');
 
-const server = new SoapServer();
+const server = new SoapServer({
+  services: () => {
+    return {
+      myService: {
+        wsdlPath: 'wsdls/MyService.wsdl',
+        service:  new MyService(),
+      },
+    }
+  },
+});
 
-server.addService(
-  'MyService',
-  {
-    wsdlPath: 'wsdls/MyService.wsdl',
-    impl: new MyService(),
-  }
-);
+
 exports.handler = server.createHandler();

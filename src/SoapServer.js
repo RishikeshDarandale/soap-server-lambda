@@ -2,35 +2,27 @@
 
 const fs = require('fs');
 const path = require('path');
+const parser = require('fast-xml-parser');
 
 class SoapServer {
 
   /**
    * A constructor
    */
-  constructor() {
-    this.services = new Map(); 
-  }
-
-  /**
-   * Add the soap service implementation
-   * 
-   * @param {String} name 
-   * @param {Object} service an object with two properties
-   *                 wsdlPath as string
-   *                 impl as an object of class implementing the service 
-   */
-  addService(name, serviceConfig) {
-    if (!name || !serviceConfig) {
-      throw Error('Either name or serviceConfig is missing.');
+  constructor(config) {
+    this.services = {};
+    if (config.services && typeof config.services === 'function') {
+      Object.assign(this.services, config.services());
+      for(const service in this.services) {
+        try {
+          this.services[service].wsdl = fs.readFileSync(path.resolve(this.services[service].wsdlPath), 'utf-8').toString();
+        } catch (error) {
+          throw Error('Cannot read the wsdl file: ' + this.services[service].wsdlPath);
+        }
+        const parsed = parser.parse(this.services[service].wsdl);
+        console.log(parsed);
+      }
     }
-    try {
-      console.log(serviceConfig.wsdlPath)
-      serviceConfig.wsdl = fs.readFileSync(path.resolve(serviceConfig.wsdlPath), 'utf-8').toString();
-    } catch(exception) {
-      throw Error('Cannot read the wsdl file: ' + serviceConfig.wsdlPath);
-    }
-    this.services.set(name, serviceConfig);
   }
 
   /**
@@ -40,14 +32,13 @@ class SoapServer {
    */
   createHandler() {
     return async (event, context) => {
-      console.log(JSON.stringify(event));
       // check this service exists
-      if (this.services.has(event.pathParameters.proxy)) {
+      if (this.services.hasOwnProperty(event.pathParameters.proxy)) {
         // get calls
         if (event.httpMethod === 'GET' && event.queryStringParameters.hasOwnProperty('wsdl')) {
           // return the wsdl
           return {
-            body: this.services.get(event.pathParameters.proxy).wsdl,
+            body: this.services[event.pathParameters.proxy].wsdl,
             statusCode: 200,
             headers: {
               'Content-Type': 'application/xml',
