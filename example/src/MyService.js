@@ -1,10 +1,10 @@
 'use strict'
 
 class MyService {
-	async MyFunction(myFunctionRequest) {
+	async MyFunction(testParam) {
 		if (myFunctionRequest) {
 			return {
-				status: 'Successful with param: ' + myFunctionRequest.testParam,
+				status: 'Successful with param: ' + testParam,
 			};
 		}
 		return {
