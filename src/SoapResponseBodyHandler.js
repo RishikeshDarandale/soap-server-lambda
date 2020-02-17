@@ -16,7 +16,7 @@ soapBodyEnd += '</soap:Envelope>';
 
 
 class SoapResponseBodyHandler {
-  async generate(response) {
+  async success(response) {
     let responseBody = soapBodyStart;
     try {
       responseBody += parser.parse(response);
@@ -41,7 +41,7 @@ class SoapResponseBodyHandler {
     soapFault += error.message;
     soapFault += '  </soap:faultstring>\n';
     soapFault += '</soap:Fault>\n';
-    return soapFault;
+    return soapBodyStart + soapFault + soapBodyEnd;
   }
 }
 

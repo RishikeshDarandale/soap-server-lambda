@@ -1,6 +1,7 @@
 'use strict';
 
 const parser = require('fast-xml-parser');
+const SoapError = require('./SoapError.js');
 
 class SoapRequestHandler {
   async getOperation(body) {
@@ -14,7 +15,6 @@ class SoapRequestHandler {
           if (soapBody && Object.keys(soapBody).length > 0) {
             const operation = Object.keys(soapBody).find(attr => !attr.startsWith('@'));
             const inputs = [];
-            console.log(JSON.stringify(Object.entries(soapBody[operation])));
             for (let [key, value] of Object.entries(soapBody[operation])) {
               // skip the attribute keys
               if (!key.startsWith('@'))
@@ -27,7 +27,7 @@ class SoapRequestHandler {
           }
       }
     }
-    throw new Error('Couldn\'t parse the message or correct operation.');
+    throw new SoapError(400, 'Couldn\'t parse the message or correct operation.');
   }
 }
 

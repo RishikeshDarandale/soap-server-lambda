@@ -6,3 +6,5 @@ class SoapError extends Error {
     this.status = status;
   }
 }
+
+module.exports = SoapError;

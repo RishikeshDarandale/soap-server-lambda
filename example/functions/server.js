@@ -14,4 +14,4 @@ const server = new SoapServer({
 });
 
 
-exports.handler = server.createHandler();
+exports.handler = server.createHandler({debug: true});
