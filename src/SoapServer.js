@@ -3,10 +3,13 @@
 const fs = require('fs');
 const path = require('path');
 const parser = require('fast-xml-parser');
+const log = require('lambda-log');
 
 const SoapRequestHandler = require('./SoapRequestHandler.js');
+const SoapResposeHandler = require('./SoapResponseBodyHandler.js');
 
 const soapRequestHandler = new SoapRequestHandler();
+const soapReponseHandler = new SoapResposeHandler();
 
 class SoapServer {
 
@@ -36,7 +39,8 @@ class SoapServer {
    * 
    * @return {function} a lambda handler to handle the incoming event
    */
-  createHandler() {
+  createHandler(options) {
+    log.options.debug = options.debug ? true: false;
     return async (event, context) => {
       // check this service exists
       if (this.services.hasOwnProperty(event.pathParameters.proxy)) {
@@ -52,7 +56,7 @@ class SoapServer {
           }
         } else if (event.httpMethod === 'POST') {
           // all post calls to service methods
-          console.log(JSON.stringify(event));
+          log.debug(JSON.stringify(event));
           let requestOperation;
           try {
             requestOperation = await soapRequestHandler.getOperation(event.body);
@@ -76,15 +80,20 @@ class SoapServer {
             if (requestOperation.inputs) {
               params = requestOperation.inputs.map(input => input.value);
             }
-            console.log('input params', params);
             response = await serviceimpl[requestOperation.operation].apply(null, params);
-            console.debug(response);
+            return {
+              body: await soapReponseHandler.generate(response),
+              statusCode: 200,
+              headers: {
+                'Content-Type': 'application/xml',
+              },
+            }
           } catch(error) {
             return {
-              body: JSON.stringify({ status: 'Not Implemented' }),
-              statusCode: 501,
+              body: await soapReponseHandler.fault(error),
+              statusCode: 200,
               headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/xml',
               },
             }
           }

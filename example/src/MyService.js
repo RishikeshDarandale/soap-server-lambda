@@ -2,7 +2,7 @@
 
 class MyService {
 	async MyFunction(testParam) {
-		if (myFunctionRequest) {
+		if (testParam) {
 			return {
 				status: 'Successful with param: ' + testParam,
 			};
