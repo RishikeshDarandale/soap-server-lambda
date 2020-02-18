@@ -1,0 +1,29 @@
+---
+extends:
+- "@commitlint/config-conventional"
+rules:
+  type-enum:
+  - 2
+  - always
+  - - jira
+    - build
+    - admin
+    - compliance
+    - security
+    - fix
+    - perf
+    - refactor
+    - revert
+    - docs
+    - release
+    - test
+    - feat
+    - chore
+  body-leading-blank:
+  - 2
+  - always
+  scope-case:
+  - 2
+  - always
+  - - upper-case
+    - lower-case
