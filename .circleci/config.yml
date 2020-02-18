@@ -1,0 +1,127 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2
+
+###
+# Aliases are common things that can be used in CircleCI config file
+###
+aliases:
+  # commands
+  - &attach_workspace
+      attach_workspace:
+        at: ~/repo
+  - &dependencies_install
+      name: Install node dependencies
+      command: npm ci
+
+  - &security_audit
+      name: Audit the produciton dependencies
+      command: npm audit --production
+  - &unit_test
+      name: Run unit tests
+      command: npm test
+  - &coverage
+      name: publish code coverage to codacy
+      command: npm run coverage
+  
+  - &auth_npm
+      name: Authenticate with registry
+      command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/repo/.npmrc
+  - &publish_npm
+      name: Publish package
+      command: npm publish
+
+  # steps
+  - &common_steps
+      # checkout the code
+      - checkout
+      # install the dependency
+      - run: *dependencies_install
+      # audit for security vulnerabilities
+      - run: *security_audit
+      # unit tests
+      - run: *unit_test
+      # push the coverage to codacy
+      - run: *coverage
+      # Save the workspace
+      - persist_to_workspace:
+          root: ~/repo
+          paths: .
+      # save the unit tests report and artifacts
+      - store_test_results:
+          path: reports/junit
+      - store_artifacts:
+          path: reports/junit
+      - store_artifacts:
+          path: reports/coverage
+
+  # publish the artifact to npm 
+  - &publish_npm_steps
+      - *attach_workspace
+      - run: *auth_npm
+      - run: *publish_npm
+
+  # common filters
+  - &pull-filter
+      branches:
+        only:
+          # only from forks
+          # we only encourage to raise a PR from forked repository
+          - /^pull\/.*$/
+          # dependabot branches from the upstream repository
+          - /^dependabot\/.*$/
+
+  - &master-filter
+      branches:
+        only: master
+
+  - &release-filter
+      tags:
+        only: /^v.*/
+      branches:
+        ignore: /.*/
+
+  # build environments
+  - &default_environment
+    working_directory: ~/repo
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:12
+
+
+# CircleCI workflows
+workflows:
+  version: 2
+  # workflow for pull request
+  pull_request:
+    jobs:
+      - "Do Sanity":
+          filters: *pull-filter
+  # workflow for master
+  master:
+    jobs:
+      - "Do Sanity":
+          filters: *master-filter
+  # workflow for release
+  release:
+    jobs:
+      - "Do Sanity":
+          filters: *release-filter
+      - "publish the package to npm":
+          requires:
+            - "Do Sanity"
+          filters: *release-filter
+
+# jobs
+jobs:
+  # Basic steps job
+  "Do Sanity":
+    <<: *default_environment
+    steps: *common_steps
+
+  # Deployment Job
+  "publish the package to npm":
+    <<: *default_environment
+    steps: *publish_npm_steps

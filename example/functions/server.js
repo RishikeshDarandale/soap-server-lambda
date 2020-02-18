@@ -7,11 +7,10 @@ const server = new SoapServer({
     return {
       myService: {
         wsdlPath: 'wsdls/MyService.wsdl',
-        service:  new MyService(),
+        service: new MyService(),
       },
-    }
+    };
   },
 });
-
 
 exports.handler = server.createHandler({debug: true});
