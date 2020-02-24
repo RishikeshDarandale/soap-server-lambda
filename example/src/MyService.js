@@ -1,16 +1,24 @@
-'use strict'
+'use strict';
 
+/**
+ * Sample MyService
+ */
 class MyService {
-	async MyFunction(testParam) {
-		if (testParam) {
-			return {
-				status: 'Successful with param: ' + testParam,
-			};
-		}
-		return {
-			status: 'Unsuccessful'
-		}
-	}
+  /**
+   * Test function method
+   *
+   * @param {String} testParam
+   */
+  async MyFunction(testParam) {
+    if (testParam) {
+      return {
+        status: 'Successful with param: ' + testParam,
+      };
+    }
+    return {
+      status: 'Unsuccessful',
+    };
+  }
 }
 
 module.exports = MyService;
