@@ -39,7 +39,7 @@
     "lint-staged": "^10.0.7",
     "nyc": "^15.0.0",
     "prettier": "^2.0.2",
-    "serverless": "^1.62.0",
+    "serverless": "^2.3.0",
     "serverless-offline": "^6.0.0",
     "serverless-webpack": "^5.3.1",
     "webpack": "^4.41.5",
