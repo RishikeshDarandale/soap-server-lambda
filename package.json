@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/RishikeshDarandale/soap-server-lambda#readme",
   "devDependencies": {
-    "@commitlint/cli": "^8.3.5",
+    "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^9.0.1",
     "ava": "^3.3.0",
     "codacy-coverage": "^3.4.0",
