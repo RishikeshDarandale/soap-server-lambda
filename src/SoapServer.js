@@ -103,7 +103,7 @@ class SoapServer {
           } catch (error) {
             log.error(error);
             return {
-              body: SoapResposeHandler.fault(error),
+              body: soapReponseHandler.fault(error),
               statusCode: error.status ? error.status : 500,
               headers: {
                 'Content-Type': 'application/xml',
