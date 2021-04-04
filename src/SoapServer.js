@@ -5,12 +5,12 @@ const path = require('path');
 const parser = require('fast-xml-parser');
 const log = require('lambda-log');
 
-const SoapRequestHandler = require('./SoapRequestHandler.js');
-const SoapResposeHandler = require('./SoapResponseBodyHandler.js');
+const SoapRequestHandler  = require('./SoapRequestHandler.js');
+const SoapResponseHandler = require('./SoapResponseBodyHandler.js');
 const SoapError = require('./SoapError.js');
 
-const soapRequestHandler = new SoapRequestHandler();
-const soapReponseHandler = new SoapResposeHandler();
+const soapRequestHandler  = new SoapRequestHandler();
+const soapResponseHandler = new SoapResponseHandler();
 
 /**
  * Soap Server
@@ -63,12 +63,17 @@ class SoapServer {
       log.options.debug = options.debug ? true : false;
     }
     return async (event, context) => {
-      log.debug('Received an event', event);
+      //log.debug("event", event);
       // check this service exists
-      if (this.services.hasOwnProperty(event.pathParameters.proxy)) {
+      if (event.pathParameters != null && this.services.hasOwnProperty(event.pathParameters.proxy)) {
         log.info('Received a request for service', {
           service: event.pathParameters.proxy,
         });
+
+        //get optionally enforced content type used in responses
+        var contentType = ('contentType' in this.services[event.pathParameters.proxy])? this.services[event.pathParameters.proxy].contentType : 'application/xml';
+        await soapResponseHandler.configure(this.services[event.pathParameters.proxy]);
+
         // get calls
         if (
           event.httpMethod === 'GET' &&
@@ -77,36 +82,33 @@ class SoapServer {
           log.info('Received a request for wsdl', {
             service: event.pathParameters.proxy,
           });
-          log.debug(
-              'The wsdl is: ',
-              this.services[event.pathParameters.proxy].wsdl,
-          );
           // return the wsdl
           return {
             body: this.services[event.pathParameters.proxy].wsdl,
             statusCode: 200,
             headers: {
-              'Content-Type': 'application/xml',
+              'Content-Type': contentType,
             },
           };
         } else if (event.httpMethod === 'POST') {
+
           // all post calls to service methods
           let requestOperation;
           try {
             requestOperation = await soapRequestHandler.getOperation(
                 event.body,
             );
-            log.debug(
+            log.info(
                 'Received a request for an operation: ',
                 requestOperation,
             );
           } catch (error) {
             log.error(error);
             return {
-              body: soapReponseHandler.fault(error),
+              body: soapResponseHandler.fault(error),
               statusCode: error.status ? error.status : 500,
               headers: {
-                'Content-Type': 'application/xml',
+                'Content-Type': contentType,
               },
             };
           }
@@ -125,40 +127,40 @@ class SoapServer {
                   null,
                   params,
               );
-              log.debug('The response received from server', response);
+              //log.debug('The response received from server', response);
             } else {
-              throw new SoapError(501, 'Operation didn\'t implemented');
+              throw new SoapError(501, 'Operation was not implemented');
             }
-            const responseBody = await soapReponseHandler.success(response);
-            log.debug('Sending the reponse body as: ', responseBody);
+            const responseBody = await soapResponseHandler.success(response);
+            //log.debug('Sending the reponse body as: ', responseBody);
             return {
               body: responseBody,
               statusCode: 200,
               headers: {
-                'Content-Type': 'application/xml',
+                'Content-Type': contentType,
               },
             };
           } catch (error) {
             log.error(error);
             return {
-              body: await soapReponseHandler.fault(error),
+              body: await soapResponseHandler.fault(error),
               statusCode: error.status ? error.status : 500,
               headers: {
-                'Content-Type': 'application/xml',
+                'Content-Type': contentType,
               },
             };
           }
         }
       } else {
-        log.error('The service not found');
+        log.error('The service was not found');
         log.debug('Available services are:', this.services);
         return {
-          body: await soapReponseHandler.fault(
+          body: await soapResponseHandler.fault(
               new SoapError(404, 'Service not found'),
           ),
           statusCode: 404,
           headers: {
-            'Content-Type': 'application/xml',
+            'Content-Type': contentType,
           },
         };
       }
