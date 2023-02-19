@@ -46,7 +46,7 @@
     "webpack-node-externals": "^2.5.2"
   },
   "dependencies": {
-    "fast-xml-parser": "^3.16.0",
+    "fast-xml-parser": "^4.1.2",
     "lambda-log": "^2.3.1"
   }
 }
